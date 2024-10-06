@@ -55,10 +55,11 @@ class CrossfadeTransition @JvmOverloads constructor(
                 return Transition.Factory.NONE.create(target, result)
             }
 
-            // Don't animate if the request was fulfilled by the memory cache.
-            if (result.dataSource == DataSource.MEMORY_CACHE) {
-                return Transition.Factory.NONE.create(target, result)
-            }
+            // Sculas: Crossfade even if the request was fulfilled by the memory cache.
+            // // Don't animate if the request was fulfilled by the memory cache.
+            // if (result.dataSource == DataSource.MEMORY_CACHE) {
+            //     return Transition.Factory.NONE.create(target, result)
+            // }
 
             return CrossfadeTransition(target, result, durationMillis, preferExactIntrinsicSize)
         }
