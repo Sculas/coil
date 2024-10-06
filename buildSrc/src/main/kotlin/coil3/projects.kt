@@ -10,7 +10,9 @@ import com.vanniktech.maven.publish.AndroidSingleVariantLibrary
 import com.vanniktech.maven.publish.JavadocJar.Dokka
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.MavenPublishBaseExtension
+import groovy.lang.ExpandoMetaClassCreationHandle.disable
 import org.gradle.api.Project
+import org.gradle.api.publish.PublishingExtension
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
@@ -58,10 +60,27 @@ fun Project.androidLibrary(
 fun Project.setupPublishing(
     action: MavenPublishBaseExtension.() -> Unit = {},
 ) {
+    // Sculas: Publish to GitHub Packages
+    extensions.configure<PublishingExtension> {
+        repositories {
+            maven {
+                name = "githubPackages"
+                url = uri("https://maven.pkg.github.com/sculas/coil")
+                credentials {
+                    username =
+                        project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_ACTOR")
+                    password =
+                        project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
+                }
+            }
+        }
+    }
+
     extensions.configure<MavenPublishBaseExtension> {
         pomFromGradleProperties()
-        publishToMavenCentral()
-        signAllPublications()
+        // Sculas: Disable publishing to Maven Central
+        // publishToMavenCentral()
+        // signAllPublications()
         action()
 
         coordinates(
