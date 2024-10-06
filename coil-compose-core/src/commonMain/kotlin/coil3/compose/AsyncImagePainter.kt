@@ -307,12 +307,18 @@ class AsyncImagePainter internal constructor(
         val previous = _state.value
         val current = transform(state)
         _state.value = current
-        painter = maybeNewCrossfadePainter(previous, current, contentScale) ?: current.painter
 
-        // Manually forget and remember the old/new painters.
-        if (previous.painter !== current.painter) {
-            (previous.painter as? RememberObserver)?.onForgotten()
-            (current.painter as? RememberObserver)?.onRemembered()
+        // Sculas: Only replace the painter if either:
+        // 1. The current state is not a loading state, or
+        // 2. The current state is a loading state with a placeholder.
+        if (current !is State.Loading || current.painter != null) {
+            painter = maybeNewCrossfadePainter(previous, current, contentScale) ?: current.painter
+
+            // Manually forget and remember the old/new painters.
+            if (previous.painter !== current.painter) {
+                (previous.painter as? RememberObserver)?.onForgotten()
+                (current.painter as? RememberObserver)?.onRemembered()
+            }
         }
 
         // Notify the state listener.
