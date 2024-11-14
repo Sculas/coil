@@ -90,27 +90,24 @@ allprojects {
                 url = "https://kotlinlang.org/api/kotlinx.coroutines/",
             )
             externalDocumentationLink(
-                url = "https://square.github.io/okio/3.x/okio/",
-                packageListUrl = "https://square.github.io/okio/3.x/okio/okio/package-list",
-            )
-            externalDocumentationLink(
                 url = "https://jetbrains.github.io/skiko/",
                 packageListUrl = "https://jetbrains.github.io/skiko/skiko/package-list",
             )
             externalDocumentationLink(
                 url = "https://api.ktor.io/",
             )
-        }
-    }
-
-    dependencies {
-        modules {
-            module("org.jetbrains.kotlin:kotlin-stdlib-jdk7") {
-                replacedBy("org.jetbrains.kotlin:kotlin-stdlib")
-            }
-            module("org.jetbrains.kotlin:kotlin-stdlib-jdk8") {
-                replacedBy("org.jetbrains.kotlin:kotlin-stdlib")
-            }
+            externalDocumentationLink(
+                url = "https://kotlinlang.org/api/kotlinx-datetime/",
+                packageListUrl = "https://kotlinlang.org/api/kotlinx-datetime/kotlinx-datetime/package-list",
+            )
+            externalDocumentationLink(
+                url = "https://square.github.io/okio/3.x/okio/",
+                packageListUrl = "https://square.github.io/okio/3.x/okio/okio/package-list",
+            )
+            externalDocumentationLink(
+                url = "https://square.github.io/okhttp/5.x/okhttp/okhttp3/",
+                packageListUrl = "https://square.github.io/okhttp/5.x/package-list",
+            )
         }
     }
 

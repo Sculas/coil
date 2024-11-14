@@ -6,12 +6,14 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
@@ -38,6 +40,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toDrawable
 import coil3.BitmapImage
+import coil3.Extras
 import coil3.ImageLoader
 import coil3.asImage
 import coil3.compose.AsyncImagePainter.State
@@ -55,13 +58,13 @@ import coil3.size.Scale
 import coil3.test.utils.ComposeTestActivity
 import coil3.test.utils.context
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.test.assertContains
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import kotlin.test.fail
 import kotlin.time.Duration.Companion.milliseconds
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flow
 import org.junit.After
@@ -114,7 +117,7 @@ class AsyncImageTest {
 
         waitForRequestComplete()
 
-        assertLoadedBitmapSize(128.dp.toPx(), 166.dp.toPx())
+        assertLoadedBitmapSize(128.dp.toPx().toInt(), 166.dp.toPx().toInt())
 
         composeTestRule.onNodeWithTag(Image)
             .assertIsDisplayed()
@@ -574,7 +577,7 @@ class AsyncImageTest {
                 model = ImageRequest.Builder(LocalContext.current)
                     .data("https://example.com/image")
                     .memoryCachePolicy(CachePolicy.ENABLED)
-                    .coroutineContext(Dispatchers.Main.immediate)
+                    .coroutineContext(EmptyCoroutineContext)
                     .build(),
                 contentDescription = null,
                 imageLoader = imageLoader,
@@ -793,6 +796,256 @@ class AsyncImageTest {
         assertEquals(2, onStartCount.get())
     }
 
+    /** Regression test: https://github.com/coil-kt/coil/issues/2573 */
+    @Test
+    fun minIntrinsicSize() {
+        assumeSupportsCaptureToImage()
+
+        val dstWidth = 100.dp
+        val dstHeight = 150.dp
+
+        composeTestRule.setContent {
+            Box(
+                modifier = Modifier
+                    .width(IntrinsicSize.Min)
+                    .height(IntrinsicSize.Min)
+                    .sizeIn(maxWidth = dstWidth, maxHeight = dstHeight),
+            ) {
+                AsyncImage(
+                    model = "https://example.com/image",
+                    contentDescription = null,
+                    imageLoader = imageLoader,
+                    modifier = Modifier
+                        .testTag(Image),
+                )
+            }
+        }
+
+        waitForRequestComplete()
+
+        val scale = DecodeUtils.computeSizeMultiplier(
+            srcWidth = SampleWidth.toFloat(),
+            srcHeight = SampleHeight.toFloat(),
+            dstWidth = dstWidth.toPx(),
+            dstHeight = dstHeight.toPx(),
+            scale = Scale.FIT,
+        ).coerceAtMost(1f)
+
+        composeTestRule.onNodeWithTag(Image)
+            .assertIsDisplayed()
+            .assertWidthIsEqualTo((scale * SampleWidth).toDp())
+            .assertHeightIsEqualTo((scale * SampleHeight).toDp())
+            .captureToImage()
+            .assertIsSimilarTo(R.drawable.sample)
+    }
+
+    /** Regression test: https://github.com/coil-kt/coil/issues/2573 */
+    @Test
+    fun maxIntrinsicSize() {
+        assumeSupportsCaptureToImage()
+
+        val dstWidth = 100.dp
+        val dstHeight = 150.dp
+
+        composeTestRule.setContent {
+            Box(
+                modifier = Modifier
+                    .width(IntrinsicSize.Max)
+                    .height(IntrinsicSize.Max)
+                    .sizeIn(maxWidth = dstWidth, maxHeight = dstHeight),
+            ) {
+                AsyncImage(
+                    model = "https://example.com/image",
+                    contentDescription = null,
+                    imageLoader = imageLoader,
+                    modifier = Modifier
+                        .testTag(Image),
+                )
+            }
+        }
+
+        waitForRequestComplete()
+
+        val scale = DecodeUtils.computeSizeMultiplier(
+            srcWidth = SampleWidth.toFloat(),
+            srcHeight = SampleHeight.toFloat(),
+            dstWidth = dstWidth.toPx(),
+            dstHeight = dstHeight.toPx(),
+            scale = Scale.FIT,
+        ).coerceAtMost(1f)
+
+        composeTestRule.onNodeWithTag(Image)
+            .assertIsDisplayed()
+            .assertWidthIsEqualTo((scale * SampleWidth).toDp())
+            .assertHeightIsEqualTo((scale * SampleHeight).toDp())
+            .captureToImage()
+            .assertIsSimilarTo(R.drawable.sample)
+    }
+
+    /** Regression test: https://github.com/coil-kt/coil/issues/2573 */
+    @Test
+    fun mixedIntrinsicSize() {
+        assumeSupportsCaptureToImage()
+
+        val dstWidth = 100.dp
+        val dstHeight = 150.dp
+
+        composeTestRule.setContent {
+            Box(
+                modifier = Modifier
+                    .width(IntrinsicSize.Max)
+                    .height(IntrinsicSize.Min)
+                    .sizeIn(maxWidth = dstWidth, maxHeight = dstHeight),
+            ) {
+                AsyncImage(
+                    model = "https://example.com/image",
+                    contentDescription = null,
+                    imageLoader = imageLoader,
+                    modifier = Modifier
+                        .testTag(Image),
+                )
+            }
+        }
+
+        waitForRequestComplete()
+
+        val scale = DecodeUtils.computeSizeMultiplier(
+            srcWidth = SampleWidth.toFloat(),
+            srcHeight = SampleHeight.toFloat(),
+            dstWidth = dstWidth.toPx(),
+            dstHeight = dstHeight.toPx(),
+            scale = Scale.FIT,
+        ).coerceAtMost(1f)
+
+        composeTestRule.onNodeWithTag(Image)
+            .assertIsDisplayed()
+            .assertWidthIsEqualTo((scale * SampleWidth).toDp())
+            .assertHeightIsEqualTo((scale * SampleHeight).toDp())
+            .captureToImage()
+            .assertIsSimilarTo(R.drawable.sample)
+    }
+
+    @Test
+    fun recomposesOnlyWhenFlowEmits_before() {
+        val key = Extras.Key(0)
+        val value = AtomicInteger()
+        val totalCompositions = 10
+        val compositionCount = AtomicInteger()
+
+        var flowEmissions = 0
+        val flow = flow {
+            while (flowEmissions < totalCompositions) {
+                emit(flowEmissions)
+                delay(20.milliseconds)
+                flowEmissions++
+            }
+        }
+
+        composeTestRule.setContent {
+            val observableValue by flow.collectAsState(0)
+
+            if (compositionCount.incrementAndGet() > totalCompositions) {
+                error("too many compositions")
+            }
+
+            // Need to observe the value.
+            observableValue.toString()
+
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data("https://example.com/image")
+                    .apply { extras[key] = value.getAndIncrement() }
+                    .build(),
+                contentDescription = null,
+                imageLoader = imageLoader,
+            )
+        }
+
+        waitForRequestComplete()
+
+        composeTestRule.waitUntil(10_000) {
+            flowEmissions >= totalCompositions
+        }
+
+        assertEquals(totalCompositions, compositionCount.get())
+        assertEquals(1, requestTracker.startedRequests)
+        assertEquals(1, requestTracker.finishedRequests)
+    }
+
+    @Test
+    fun recomposesOnlyWhenFlowEmits_after() {
+        val key = Extras.Key(0)
+        val value = AtomicInteger()
+        val totalCompositions = 10
+        val compositionCount = AtomicInteger()
+
+        var flowEmissions = 0
+        val flow = flow {
+            while (flowEmissions < totalCompositions) {
+                emit(flowEmissions)
+                delay(20.milliseconds)
+                flowEmissions++
+            }
+        }
+
+        composeTestRule.setContent {
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data("https://example.com/image")
+                    .apply { extras[key] = value.getAndIncrement() }
+                    .build(),
+                contentDescription = null,
+                imageLoader = imageLoader,
+            )
+
+            val observableValue by flow.collectAsState(0)
+
+            if (compositionCount.incrementAndGet() > totalCompositions) {
+                error("too many compositions")
+            }
+
+            // Need to observe the value.
+            observableValue.toString()
+        }
+
+        waitForRequestComplete()
+
+        composeTestRule.waitUntil(10_000) {
+            flowEmissions >= totalCompositions
+        }
+
+        assertEquals(totalCompositions, compositionCount.get())
+        assertEquals(1, requestTracker.startedRequests)
+        assertEquals(1, requestTracker.finishedRequests)
+    }
+
+    @Test
+    fun zeroHeightWhenAsyncImageIsEmpty() {
+        composeTestRule.setContent {
+            Column(Modifier.fillMaxSize()) {
+                AsyncImage(
+                    model = ImageRequest.Builder(context)
+                        .data(Unit)
+                        // Skip waiting for the constraints which will always be empty.
+                        .size(100)
+                        .build(),
+                    contentDescription = null,
+                    imageLoader = imageLoader,
+                    contentScale = ContentScale.FillWidth,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(Image),
+                )
+            }
+        }
+
+        waitForRequestComplete()
+
+        composeTestRule.onNodeWithTag(Image)
+            .assertWidthIsEqualTo(context.resources.displayMetrics.widthPixels.toDp())
+            .assertHeightIsEqualTo(0.dp)
+    }
+
     private fun waitForRequestComplete(finishedRequests: Int = 1) = waitUntil {
         requestTracker.finishedRequests >= finishedRequests
     }
@@ -830,9 +1083,13 @@ class AsyncImageTest {
         )
     }
 
-    private fun Dp.toPx() = with(composeTestRule.density) { toPx().toInt() }
+    private fun Dp.toPx() = with(composeTestRule.density) { toPx() }
 
-    private fun Double.toDp() = with(composeTestRule.density) { toInt().toDp() }
+    private fun Int.toDp() = with(composeTestRule.density) { toDp() }
+
+    private fun Float.toDp() = with(composeTestRule.density) { toDp() }
+
+    private fun Double.toDp() = with(composeTestRule.density) { toFloat().toDp() }
 
     private val displaySize: IntSize
         get() = composeTestRule.activity.findViewById<View>(android.R.id.content)!!

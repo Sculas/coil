@@ -1,6 +1,7 @@
 package sample.compose
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -10,15 +11,17 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyStaggeredGridState
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.TopAppBar
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.lightColors
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -43,6 +46,7 @@ import coil3.util.component1
 import coil3.util.component2
 import io.coil_kt.coil3.compose.generated.resources.Res
 import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.MissingResourceException
 import sample.common.AssetType
 import sample.common.Image
 import sample.common.MainViewModel
@@ -50,34 +54,32 @@ import sample.common.NUM_COLUMNS
 import sample.common.Resources
 import sample.common.Screen
 import sample.common.calculateScaledSize
+import sample.common.extras
 import sample.common.newImageLoader
 import sample.common.next
 
 @Composable
-fun App(resources: Resources) {
-    val viewModel = remember(resources) {
-        MainViewModel(resources)
+fun App() {
+    val viewModel = remember {
+        MainViewModel(ComposeResources())
     }
     LaunchedEffect(viewModel) {
         viewModel.start()
     }
-    App(viewModel)
+    App(viewModel, debug = false)
 }
 
 @Composable
 fun App(
     viewModel: MainViewModel,
-    debug: Boolean = false,
+    debug: Boolean,
 ) {
     setSingletonImageLoaderFactory { context ->
         newImageLoader(context, debug)
     }
 
     MaterialTheme(
-        colors = lightColors(
-            primary = Color.White,
-            onPrimary = Color.Black,
-        ),
+        colorScheme = if (isSystemInDarkTheme()) darkColors else lightColors,
     ) {
         val screen by viewModel.screen.collectAsState()
         val isDetail = screen is Screen.Detail
@@ -110,6 +112,7 @@ fun App(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun Toolbar(
     assetType: AssetType,
@@ -119,11 +122,13 @@ private fun Toolbar(
     onBackPressed: () -> Unit,
 ) {
     TopAppBar(
-        title = { Text(Title) },
-        navigationIcon = if (backEnabled) {
-            { BackIconButton(onBackPressed) }
-        } else {
-            null
+        title = {
+            Text(Title)
+        },
+        navigationIcon = {
+            if (backEnabled) {
+                BackIconButton(onBackPressed)
+            }
         },
         actions = {
             IconButton(
@@ -188,7 +193,7 @@ private fun DetailScreen(screen: Screen.Detail) {
         model = ImageRequest.Builder(LocalPlatformContext.current)
             .data(screen.image.uri)
             .placeholderMemoryCacheKey(screen.placeholder)
-            .apply { extras.setAll(screen.image.extras) }
+            .extras(screen.image.extras)
             .build(),
         contentDescription = null,
         modifier = Modifier.fillMaxSize(),
@@ -226,7 +231,7 @@ private fun ListScreen(
             AsyncImage(
                 model = ImageRequest.Builder(LocalPlatformContext.current)
                     .data(image.uri)
-                    .apply { extras.setAll(image.extras) }
+                    .extras(image.extras)
                     .build(),
                 contentDescription = null,
                 placeholder = ColorPainter(Color(image.color)),
@@ -243,6 +248,16 @@ private fun ListScreen(
 
 const val Title = "Coil"
 
+private val darkColors = darkColorScheme(
+    background = Color(0xFF141218),
+    surface = Color(0xFF141218),
+)
+
+private val lightColors = lightColorScheme(
+    background = Color.White,
+    surface = Color.White,
+)
+
 @OptIn(ExperimentalResourceApi::class)
 private val resourceDetailScreen = Screen.Detail(
     image = Image(
@@ -252,6 +267,26 @@ private val resourceDetailScreen = Screen.Detail(
         height = 1326,
     ),
 )
+
+@OptIn(ExperimentalResourceApi::class)
+private class ComposeResources : Resources {
+
+    override fun uri(path: String): String {
+        return try {
+            Res.getUri("files/$path")
+        } catch (_: MissingResourceException) {
+            ""
+        }
+    }
+
+    override suspend fun readBytes(path: String): ByteArray {
+        return try {
+            Res.readBytes("files/$path")
+        } catch (_: MissingResourceException) {
+            byteArrayOf()
+        }
+    }
+}
 
 @Stable
 expect fun Modifier.testTagsAsResourceId(enable: Boolean): Modifier

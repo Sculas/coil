@@ -1,5 +1,58 @@
 # Changelog
 
+## [3.0.2] - November 9, 2024
+
+- Fix crash when invoking `OkHttpNetworkFetcherFactory` with a custom `CacheStrategy` on Android.
+- Fix `CacheControlCacheStrategy` computing the age of a cache entry incorrectly.
+- Fix case where `ImageRequest.bitmapConfig` would only be respected on >= API 28 if it was `ARGB_8888` or `HARDWARE`.
+
+## [3.0.1] - November 7, 2024
+
+- Fix crash when calling `Image.toBitmap` with a hardware bitmap-backed `BitmapImage`.
+- Fix `AsyncImageModelEqualityDelegate.Default` comparing equality incorrectly for non-`ImageRequest` models.
+
+## [3.0.0] - November 4, 2024
+
+Coil 3.0.0 is the next major release of Coil with full support for [Compose Multiplatform](https://www.jetbrains.com/compose-multiplatform/).
+
+[For the full list of improvements and important changes in 3.0.0, check out the upgrade guide](https://coil-kt.github.io/coil/upgrading_to_coil3/).
+
+Changes since `3.0.0-rc02`:
+
+- Remove remaining deprecated methods.
+
+## [3.0.0-rc02] - October 28, 2024
+
+[For the full list of improvements and important changes in 3.x, check out the upgrade guide](https://coil-kt.github.io/coil/upgrading_to_coil3/). Changes since `3.0.0-rc01`:
+
+- Add `BlackholeDecoder`. This simplifies [disk-cache only preloading](https://coil-kt.github.io/coil/faq/#how-do-i-preload-an-image).
+- Add `remember` functions for `ConstraintsSizeResolver` and `DrawScopeSizeResolver`.
+- Remove `EqualityDelegate` as a parameter to `AsyncImage`. Instead, it should be set through `LocalAsyncImageModelEqualityDelegate`.
+- Fix `AsyncImage` not rendering when parent composable uses `IntrinsicSize`.
+- Fix `AsyncImage` filling the available constraints when `AsyncImagePainter` has no child painter.
+- Fix `rememberAsyncImagePainter` recomposing infinitely when its state is observed due to `EqualityDelegate` being ignored.
+- Fix parsing `File`/`Path` paths with special characters.
+- Fix using custom `FileSystem` implementations with `VideoFrameDecoder`.
+- Update Ktor to `3.0.0`.
+- Update `androidx.annotation` to `1.9.0`.
+
+## [3.0.0-rc01] - October 8, 2024
+
+[For the full list of improvements and important changes in 3.x, check out the upgrade guide](https://coil-kt.github.io/coil/upgrading_to_coil3/). Changes since `3.0.0-alpha10`:
+
+- **BREAKING** Disable `addLastModifiedToFileCacheKey` by default and allow it to be set per request. The behaviour can be reenabled with the same flag.
+- **New**: Introduce a new `coil-network-cache-control` artifact, which implements [`Cache-Control` header](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control) support.
+- **New**: Add `scaleToDensity` property to `SvgDecoder.Factory`. This property ensure SVGs with intrinsic dimensions are multiplied by the devices density (only supported on Android).
+- Rename `ExifOrientationPolicy` to `ExifOrientationStrategy`.
+- Remove unshareable images from the `MemoryCache` on get.
+- Make `ConstraintsSizeResolver` public.
+- Stabilize `setSingletonImageLoaderFactory`.
+- Restore optimized JVM I/O functions in `coil-network-ktor3`
+- Add `pdf` to list of mime types.
+- Update compile sdk to 35.
+- Update Kotlin to 2.0.20.
+- Update Okio to 3.9.1.
+
 ## [3.0.0-alpha10] - August 7, 2024
 
 - **BREAKING**: Replace `ImageLoader.Builder.networkObserverEnabled` with a `ConnectivityChecker` interface for `NetworkFetcher`.

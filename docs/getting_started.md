@@ -1,171 +1,96 @@
 # Getting Started
 
-## Artifacts
+## Compose UI
 
-Coil has 9 artifacts published to `mavenCentral()`:
-
-* `io.coil-kt:coil`: The default artifact which depends on `io.coil-kt:coil-base`, creates a singleton `ImageLoader`, and includes the `ImageView` extension functions.
-* `io.coil-kt:coil-base`: A subset of `io.coil-kt:coil` which **does not** include the singleton `ImageLoader` and the `ImageView` extension functions.
-* `io.coil-kt:coil-compose`: Includes support for [Jetpack Compose](https://developer.android.com/jetpack/compose).
-* `io.coil-kt:coil-compose-base`: A subset of `io.coil-kt:coil-compose` which does not include functions that depend on the singleton `ImageLoader`.
-* `io.coil-kt:coil-gif`: Includes two [decoders](/coil/api/coil-core/coil3.decode/-decoder) to support decoding GIFs. See [GIFs](gifs.md) for more details.
-* `io.coil-kt:coil-svg`: Includes a [decoder](/coil/api/coil-core/coil3.decode/-decoder) to support decoding SVGs. See [SVGs](svgs.md) for more details.
-* `io.coil-kt:coil-video`: Includes a [decoder](/coil/api/coil-core/coil3.decode/-decoder) to support decoding frames from [any of Android's supported video formats](https://developer.android.com/guide/topics/media/media-formats#video-codecs). See [videos](videos.md) for more details.
-* `io.coil-kt:coil-test`: Includes classes to support testing with `ImageLoader`s. See [Testing](testing.md) for more details.
-* `io.coil-kt:coil-bom`: Includes a [bill of materials](https://docs.gradle.org/7.2/userguide/platforms.html#sub:bom_import). Importing `coil-bom` allows you to depend on other Coil artifacts without specifying a version.
-
-## Image Loaders
-
-[`ImageLoader`](image_loaders.md)s are service classes that execute [`ImageRequest`](image_requests.md)s. `ImageLoader`s handle caching, data fetching, image decoding, request management, bitmap pooling, memory management, and more.
-
-The default Coil artifact (`io.coil-kt:coil`) includes the singleton `ImageLoader`, which can be accessed using an extension function: `context.imageLoader`.
-
-The singleton `ImageLoader` can be configured by implementing `ImageLoaderFactory` on your `Application` class:
+A typical Compose UI project will want to import:
 
 ```kotlin
-class MyApplication : Application(), ImageLoaderFactory {
-    override fun newImageLoader(): ImageLoader {
-        return ImageLoader.Builder(this)
+implementation("io.coil-kt.coil3:coil-compose:3.0.2")
+implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.2")
+```
+
+After that's imported you can load images from the network using `AsyncImage`:
+
+```kotlin
+AsyncImage(
+    model = "https://example.com/image.jpg",
+    contentDescription = null,
+)
+```
+
+!!! Note
+    If you use Compose Multiplatform, you'll need to use Ktor instead of OkHttp. See [here](network.md#ktor-network-engines) for how to do that.
+
+## Android Views
+
+If you use Android Views instead of Compose UI import:
+
+```kotlin
+implementation("io.coil-kt.coil3:coil:3.0.2")
+implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.2")
+```
+
+After that's imported you can load images from the network using the `ImageView.load` extension function:
+
+```kotlin
+imageView.load("https://example.com/image.jpg")
+```
+
+## Configuring the singleton ImageLoader
+
+By default, Coil includes a singleton `ImageLoader`. The `ImageLoader` executes incoming `ImageRequest`s by fetching, decoding, caching, and returning the result. You don't need to configure your `ImageLoader`; if you don't Coil will create the singleton `ImageLoader` with the default configuration.
+
+You can configure it a number of ways (**choose only one**):
+
+- Call `setSingletonImageLoaderFactory` near the entrypoint to your app (the root `@Composable` of your app). **This works best for Compose Multiplatform apps.**
+
+```kotlin
+setSingletonImageLoaderFactory { context ->
+    ImageLoader.Builder(context)
+        .crossfade(true)
+        .build()
+}
+```
+
+- Implement `SingletonImageLoader.Factory` on your [`Application`](https://developer.android.com/reference/android/app/Application) in Android. **This works best for Android apps.**
+
+```kotlin
+class CustomApplication : Application(), SingletonImageLoader.Factory {
+    override fun newImageLoader(context: Context): ImageLoader {
+        return ImageLoader.Builder(context)
             .crossfade(true)
             .build()
     }
 }
 ```
 
-Implementing `ImageLoaderFactory` is optional. If you don't, Coil will lazily create an `ImageLoader` with the default values.
-
-Check out [the full documentation](image_loaders.md) for more info.
-
-## Image Requests
-
-[`ImageRequest`](image_requests.md)s are value classes that are executed by [`ImageLoader`](image_loaders.md)s. They describe where an image should be loaded from, how it should be loaded, and any extra parameters. An `ImageLoader` has two methods that can execute a request:
-
-- `enqueue`: Enqueues the `ImageRequest` to be executed asynchronously on a background thread.
-- `execute`: Executes the `ImageRequest` in the current coroutine and returns an [`ImageResult`](/coil/api/coil-core/coil3.request/-image-result).
-
-All requests should set `data` (i.e. url, uri, file, drawable resource, etc.). This is what the `ImageLoader` will use to decide where to fetch the image data from. If you do not set `data`, it will default to [`NullRequestData`](/coil/api/coil-core/coil3.request/-null-request-data).
-
-Additionally, you likely want to set a `target` when enqueuing a request. It's optional, but the `target` is what will receive the loaded placeholder/success/error drawables. Executed requests return an `ImageResult` which has the success/error drawable.
-
-Here's an example:
+- Call `SingletonImageLoader.setSafe` near the entrypoint to your app (e.g. in `Application.onCreate` on Android). This is the most flexible.
 
 ```kotlin
-// enqueue
-val request = ImageRequest.Builder(context)
-    .data("https://example.com/image.jpg")
-    .target(imageView)
-    .build()
-val disposable = imageLoader.enqueue(request)
-
-// execute
-val request = ImageRequest.Builder(context)
-    .data("https://example.com/image.jpg")
-    .build()
-val result = imageLoader.execute(request)
-```
-
-## ImageView Extension Functions
-
-The `io.coil-kt:coil` artifact provides a set of `ImageView` extension functions. Here's an example for loading a URL into an `ImageView`:
-
-```kotlin
-imageView.load("https://example.com/image.jpg")
-```
-
-The above call is equivalent to:
-
-```kotlin
-val imageLoader = imageView.context.imageLoader
-val request = ImageRequest.Builder(imageView.context)
-    .data("https://example.com/image.jpg")
-    .target(imageView)
-    .build()
-imageLoader.enqueue(request)
-```
-
-`ImageView.load` calls can be configured with an optional trailing lambda parameter:
-
-```kotlin
-imageView.load("https://example.com/image.jpg") {
-    crossfade(true)
-    placeholder(R.drawable.image)
-    transformations(CircleCropTransformation())
+SingletonImageLoader.setSafe { context ->
+    ImageLoader.Builder(context)
+        .crossfade(true)
+        .build()
 }
 ```
 
-See the docs [here](/coil/api/coil/coil3/load) for more information.
+!!! Note
+    If you are writing a library that depends on Coil you should NOT get/set the singleton `ImageLoader`. Instead, you should depend on `io.coil-kt.coil3:coil-core`, create your own `ImageLoader`, and pass it around manually. If you set the singleton `ImageLoader` in your library you could be overwriting the `ImageLoader` set by the app using your library if they also use Coil.
 
-## Supported Data Types
+## Artifacts
 
-The base data types that are supported by all `ImageLoader` instances are:
+Here's a list of the main artifacts Coil has published to `mavenCentral()`:
 
-* String
-* HttpUrl
-* Uri (`android.resource`, `content`, `file`, `http`, and `https` schemes)
-* File
-* @DrawableRes Int
-* Drawable
-* Bitmap
-* ByteArray
-* ByteBuffer
-
-## Supported Image Formats
-
-All `ImageLoader`s support the following non-animated file types:
-
-* BMP
-* JPEG
-* PNG
-* WebP
-* HEIF (Android 8.0+)
-* AVIF (Android 12.0+)
-
-Additionally, Coil has extension libraries for the following file types:
-
-* `coil-gif`: GIF, animated WebP (Android 9.0+), animated HEIF (Android 11.0+)
-* `coil-svg`: SVG
-* `coil-video`: Static video frames from any [video codec supported by Android](https://developer.android.com/guide/topics/media/media-formats#video-codecs)
-
-## Preloading
-
-To preload an image into memory, enqueue or execute an `ImageRequest` without a `Target`:
-
-```kotlin
-val request = ImageRequest.Builder(context)
-    .data("https://example.com/image.jpg")
-    // Optional, but setting a ViewSizeResolver will conserve memory by limiting the size the image should be preloaded into memory at.
-    .size(ViewSizeResolver(imageView))
-    .build()
-imageLoader.enqueue(request)
-```
-
-To preload a network image only into the disk cache:
-
-```kotlin
-val request = ImageRequest.Builder(context)
-    .data("https://example.com/image.jpg")
-    // Disable reading from/writing to the memory cache.
-    .memoryCachePolicy(CachePolicy.DISABLED)
-    // Set a custom `Decoder.Factory` that skips the decoding step.
-    .decoderFactory { _, _, _ ->
-        Decoder { DecodeResult(ColorDrawable(Color.BLACK), false) }
-    }
-    .build()
-imageLoader.enqueue(request)
-```
-
-## Cancelling Requests
-
-`ImageRequest`s will be automatically cancelled in the following cases:
-
-- `request.lifecycle` reaches the `DESTROYED` state.
-- `request.target` is a `ViewTarget` and its `View` is detached.
-
-Additionally, `ImageLoader.enqueue` returns a [Disposable](/coil/api/coil-core/coil3.request/-disposable/), which can be used to dispose the request (which cancels it and frees its associated resources):
-
-```kotlin
-val disposable = imageView.load("https://example.com/image.jpg")
-
-// Cancel the request.
-disposable.dispose()
-```
+* `io.coil-kt.coil3:coil`: The default artifact which depends on `io.coil-kt.coil3:coil-core`. It includes a singleton `ImageLoader` and related extension functions.
+* `io.coil-kt.coil3:coil-core`: A subset of `io.coil-kt.coil3:coil` which **does not** include the singleton `ImageLoader` and related extension functions.
+* `io.coil-kt.coil3:coil-compose`: The default [Compose UI](https://www.jetbrains.com/compose-multiplatform/) artifact which depends on `io.coil-kt.coil3:coil` and `io.coil-kt.coil3:coil-compose-core`. It includes overloads for `AsyncImage`, `rememberAsyncImagePainter`, and `SubcomposeAsyncImage` that use the singleton `ImageLoader`.
+* `io.coil-kt.coil3:coil-compose-core`: A subset of `io.coil-kt.coil3:coil-compose` which does not include functions that depend on the singleton `ImageLoader`.
+* `io.coil-kt.coil3:coil-network-okhttp`: Includes support for fetching images from the network using [OkHttp](https://github.com/square/okhttp).
+* `io.coil-kt.coil3:coil-network-ktor2`: Includes support for fetching images from the network using [Ktor 2](https://github.com/ktorio/ktor).
+* `io.coil-kt.coil3:coil-network-ktor3`: Includes support for fetching images from the network using [Ktor 3](https://github.com/ktorio/ktor).
+* `io.coil-kt.coil3:coil-network-cache-control`: Includes support for respecting [`Cache-Control` headers](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Cache-Control) when fetching images from the network.
+* `io.coil-kt.coil3:coil-gif`: Includes two [decoders](/coil/api/coil-core/coil3.decode/-decoder) to support decoding GIFs. See [GIFs](gifs.md) for more details.
+* `io.coil-kt.coil3:coil-svg`: Includes a [decoder](/coil/api/coil-core/coil3.decode/-decoder) to support decoding SVGs. See [SVGs](svgs.md) for more details.
+* `io.coil-kt.coil3:coil-video`: Includes a [decoder](/coil/api/coil-core/coil3.decode/-decoder) to support decoding frames from [any of Android's supported video formats](https://developer.android.com/guide/topics/media/media-formats#video-codecs). See [videos](videos.md) for more details.
+* `io.coil-kt.coil3:coil-test`: Includes classes to support testing. See [testing](testing.md) for more details.
+* `io.coil-kt.coil3:coil-bom`: Includes a [bill of materials](https://docs.gradle.org/7.2/userguide/platforms.html#sub:bom_import). Importing `coil-bom` allows you to depend on other Coil artifacts without specifying a version.

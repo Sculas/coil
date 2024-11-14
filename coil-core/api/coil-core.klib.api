@@ -422,6 +422,23 @@ abstract class coil3/PlatformContext { // coil3/PlatformContext|null[0]
     }
 }
 
+final class coil3.decode/BlackholeDecoder : coil3.decode/Decoder { // coil3.decode/BlackholeDecoder|null[0]
+    constructor <init>(kotlin/Function0<coil3/Image>) // coil3.decode/BlackholeDecoder.<init>|<init>(kotlin.Function0<coil3.Image>){}[0]
+
+    final suspend fun decode(): coil3.decode/DecodeResult // coil3.decode/BlackholeDecoder.decode|decode(){}[0]
+
+    final class Factory : coil3.decode/Decoder.Factory { // coil3.decode/BlackholeDecoder.Factory|null[0]
+        constructor <init>(kotlin/Function0<coil3/Image> = ...) // coil3.decode/BlackholeDecoder.Factory.<init>|<init>(kotlin.Function0<coil3.Image>){}[0]
+
+        final fun create(coil3.fetch/SourceFetchResult, coil3.request/Options, coil3/ImageLoader): coil3.decode/BlackholeDecoder // coil3.decode/BlackholeDecoder.Factory.create|create(coil3.fetch.SourceFetchResult;coil3.request.Options;coil3.ImageLoader){}[0]
+
+        final object Companion { // coil3.decode/BlackholeDecoder.Factory.Companion|null[0]
+            final val EMPTY_IMAGE // coil3.decode/BlackholeDecoder.Factory.Companion.EMPTY_IMAGE|{}EMPTY_IMAGE[0]
+                final fun <get-EMPTY_IMAGE>(): coil3/Image // coil3.decode/BlackholeDecoder.Factory.Companion.EMPTY_IMAGE.<get-EMPTY_IMAGE>|<get-EMPTY_IMAGE>(){}[0]
+        }
+    }
+}
+
 final class coil3.decode/DecodeResult { // coil3.decode/DecodeResult|null[0]
     constructor <init>(coil3/Image, kotlin/Boolean) // coil3.decode/DecodeResult.<init>|<init>(coil3.Image;kotlin.Boolean){}[0]
 
@@ -642,6 +659,7 @@ final class coil3.request/ImageRequest { // coil3.request/ImageRequest|null[0]
             final fun <get-sizeResolver>(): coil3.size/SizeResolver // coil3.request/ImageRequest.Defaults.sizeResolver.<get-sizeResolver>|<get-sizeResolver>(){}[0]
 
         final fun copy(okio/FileSystem = ..., kotlin.coroutines/CoroutineContext = ..., kotlin.coroutines/CoroutineContext = ..., kotlin.coroutines/CoroutineContext = ..., coil3.request/CachePolicy = ..., coil3.request/CachePolicy = ..., coil3.request/CachePolicy = ..., kotlin/Function1<coil3.request/ImageRequest, coil3/Image?> = ..., kotlin/Function1<coil3.request/ImageRequest, coil3/Image?> = ..., kotlin/Function1<coil3.request/ImageRequest, coil3/Image?> = ..., coil3.size/Precision = ..., coil3/Extras = ...): coil3.request/ImageRequest.Defaults // coil3.request/ImageRequest.Defaults.copy|copy(okio.FileSystem;kotlin.coroutines.CoroutineContext;kotlin.coroutines.CoroutineContext;kotlin.coroutines.CoroutineContext;coil3.request.CachePolicy;coil3.request.CachePolicy;coil3.request.CachePolicy;kotlin.Function1<coil3.request.ImageRequest,coil3.Image?>;kotlin.Function1<coil3.request.ImageRequest,coil3.Image?>;kotlin.Function1<coil3.request.ImageRequest,coil3.Image?>;coil3.size.Precision;coil3.Extras){}[0]
+        final fun copy(okio/FileSystem = ..., kotlin.coroutines/CoroutineContext = ..., kotlin.coroutines/CoroutineContext = ..., kotlin.coroutines/CoroutineContext = ..., coil3.request/CachePolicy = ..., coil3.request/CachePolicy = ..., coil3.request/CachePolicy = ..., kotlin/Function1<coil3.request/ImageRequest, coil3/Image?> = ..., kotlin/Function1<coil3.request/ImageRequest, coil3/Image?> = ..., kotlin/Function1<coil3.request/ImageRequest, coil3/Image?> = ..., coil3.size/SizeResolver = ..., coil3.size/Scale = ..., coil3.size/Precision = ..., coil3/Extras = ...): coil3.request/ImageRequest.Defaults // coil3.request/ImageRequest.Defaults.copy|copy(okio.FileSystem;kotlin.coroutines.CoroutineContext;kotlin.coroutines.CoroutineContext;kotlin.coroutines.CoroutineContext;coil3.request.CachePolicy;coil3.request.CachePolicy;coil3.request.CachePolicy;kotlin.Function1<coil3.request.ImageRequest,coil3.Image?>;kotlin.Function1<coil3.request.ImageRequest,coil3.Image?>;kotlin.Function1<coil3.request.ImageRequest,coil3.Image?>;coil3.size.SizeResolver;coil3.size.Scale;coil3.size.Precision;coil3.Extras){}[0]
         final fun equals(kotlin/Any?): kotlin/Boolean // coil3.request/ImageRequest.Defaults.equals|equals(kotlin.Any?){}[0]
         final fun hashCode(): kotlin/Int // coil3.request/ImageRequest.Defaults.hashCode|hashCode(){}[0]
         final fun toString(): kotlin/String // coil3.request/ImageRequest.Defaults.toString|toString(){}[0]
@@ -976,10 +994,12 @@ final fun coil3.size/Size(kotlin/Int, coil3.size/Dimension): coil3.size/Size // 
 final fun coil3.size/Size(kotlin/Int, kotlin/Int): coil3.size/Size // coil3.size/Size|Size(kotlin.Int;kotlin.Int){}[0]
 final fun coil3.size/SizeResolver(coil3.size/Size): coil3.size/SizeResolver // coil3.size/SizeResolver|SizeResolver(coil3.size.Size){}[0]
 final fun coil3/ImageLoader(coil3/PlatformContext): coil3/ImageLoader // coil3/ImageLoader|ImageLoader(coil3.PlatformContext){}[0]
+final fun coil3/Uri(kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String? = ..., kotlin/String = ...): coil3/Uri // coil3/Uri|Uri(kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String?;kotlin.String){}[0]
 final inline fun (coil3.size/Dimension).coil3.size/pxOrElse(kotlin/Function0<kotlin/Int>): kotlin/Int // coil3.size/pxOrElse|pxOrElse@coil3.size.Dimension(kotlin.Function0<kotlin.Int>){}[0]
 final inline fun (coil3.util/IntPair).coil3.util/component1(): kotlin/Int // coil3.util/component1|component1@coil3.util.IntPair(){}[0]
 final inline fun (coil3.util/IntPair).coil3.util/component2(): kotlin/Int // coil3.util/component2|component2@coil3.util.IntPair(){}[0]
 final inline fun (coil3.util/Logger).coil3.util/log(kotlin/String, coil3.util/Logger.Level, kotlin/Function0<kotlin/String>) // coil3.util/log|log@coil3.util.Logger(kotlin.String;coil3.util.Logger.Level;kotlin.Function0<kotlin.String>){}[0]
+final inline fun (coil3.util/Logger).coil3.util/log(kotlin/String, kotlin/Throwable, kotlin/Function0<kotlin/String>) // coil3.util/log|log@coil3.util.Logger(kotlin.String;kotlin.Throwable;kotlin.Function0<kotlin.String>){}[0]
 
 // Targets: [apple]
 final fun (coil3/ImageLoader).coil3/executeBlocking(coil3.request/ImageRequest): coil3.request/ImageResult // coil3/executeBlocking|executeBlocking@coil3.ImageLoader(coil3.request.ImageRequest){}[0]

@@ -1,32 +1,23 @@
 ﻿![Coil](logo.svg)
 
-An image loading library for Android and [Compose Multiplatform](https://www.jetbrains.com/lp/compose-multiplatform/). Coil is:
+An image loading library for [Android](https://www.android.com/) and [Compose Multiplatform](https://www.jetbrains.com/lp/compose-multiplatform/). Coil is:
 
 - **Fast**: Coil performs a number of optimizations including memory and disk caching, downsampling the image, automatically pausing/cancelling requests, and more.
-- **Lightweight**: Coil only depends on Kotlin, Coroutines, and Okio and works seamlessly with code shrinkers like [Google's R8](https://developer.android.com/build/shrink-code).
+- **Lightweight**: Coil only depends on Kotlin, Coroutines, and Okio and works seamlessly with Google's R8 code shrinker.
 - **Easy to use**: Coil's API leverages Kotlin's language features for simplicity and minimal boilerplate.
-- **Modern**: Coil is Kotlin-first and interoperates with modern libraries including Coroutines, Okio, Ktor, and OkHttp.
+- **Modern**: Coil is Kotlin-first and interoperates with modern libraries including Compose, Coroutines, Okio, OkHttp, and Ktor.
 
 Coil is an acronym for: **Co**routine **I**mage **L**oader.
 
 Translations: [日本語](README-ja.md), [한국어](README-ko.md), [Русский](README-ru.md), [Svenska](README-sv.md), [Türkçe](README-tr.md), [中文](README-zh.md)
 
-## Download
-
-Coil is available on `mavenCentral()`.
-
-```kotlin
-implementation("io.coil-kt:coil:2.7.0")
-```
-
 ## Quick Start
 
-#### Compose
-
-Import the [Compose](https://developer.android.com/jetpack/compose) extension library:
+Import the Compose library and a [networking library](https://coil-kt.github.io/coil/network/):
 
 ```kotlin
-implementation("io.coil-kt:coil-compose:2.7.0")
+implementation("io.coil-kt.coil3:coil-compose:3.0.2")
+implementation("io.coil-kt.coil3:coil-network-okhttp:3.0.2")
 ```
 
 To load an image, use the `AsyncImage` composable:
@@ -36,23 +27,6 @@ AsyncImage(
     model = "https://example.com/image.jpg",
     contentDescription = null,
 )
-```
-
-#### ImageViews
-
-To load an image into an `ImageView`, use the `load` extension function:
-
-```kotlin
-imageView.load("https://example.com/image.jpg")
-```
-
-Requests can be configured with an optional trailing lambda:
-
-```kotlin
-imageView.load("https://example.com/image.jpg") {
-    crossfade(true)
-    placeholder(R.drawable.image)
-}
 ```
 
 Check out Coil's [full documentation here](https://coil-kt.github.io/coil/getting_started/).
